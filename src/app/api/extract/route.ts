@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { CAPTURE_SCHEMA } from "@/lib/schema";
 
 export const maxDuration = 120;
@@ -31,6 +32,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const limit = rateLimit(request);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: `Rate limited — try again in ${limit.retryAfterSec}s. This demo allows 10 extractions per 10 minutes.` },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+
   let payload: Payload;
   try {
     payload = await request.json();
@@ -38,6 +47,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Body must be JSON." }, { status: 400 });
   }
 
+  if (typeof payload.text === "string" && payload.text.length > 20_000) {
+    return NextResponse.json({ error: "Text too long (20k characters max)." }, { status: 413 });
+  }
   const hasText = typeof payload.text === "string" && payload.text.trim().length > 0;
   const hasImage = Boolean(payload.image?.data && payload.image.media_type);
   if (!hasText && !hasImage) {
