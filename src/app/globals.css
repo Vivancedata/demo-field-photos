@@ -1,0 +1,4 @@
+/* Tokens, base layer and utilities come from @vivancedata/ui (imported in
+ * layout.tsx before this file). Only app-specific styles belong here. */
+@tailwind components;
+@tailwind utilities;
