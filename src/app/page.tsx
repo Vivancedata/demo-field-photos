@@ -14,6 +14,58 @@ const CONFIDENCE_LABEL: Record<FieldCapture["match_confidence"], string> = {
   none: "No confident match",
 };
 
+/**
+ * The frame mark is this demo's signature. All three VivanceData demos share one
+ * shell -- black ground, green mono eyebrow, a paste box -- which made them
+ * indistinguishable from each other in a tab strip. The mark names the input
+ * (a photo from the field), and `--chart-3` tints it: the chart ramp is the same
+ * green-to-cyan family as the brand and the hero mesh, so the three demos read
+ * as siblings rather than as three unrelated pages.
+ */
+const PageMark = () => (
+  <svg viewBox="0 0 20 20" className="h-5 w-5 shrink-0 text-chart-3" fill="none" aria-hidden="true">
+    <rect x="2.5" y="4.5" width="15" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M2.5 12.75 6.25 9.5l2.75 2.25 3-3.25 5.5 4.75" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    <circle cx="6.75" cy="7.75" r="1.15" fill="currentColor" />
+  </svg>
+);
+
+const Spinner = () => (
+  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 animate-spin" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeOpacity="0.35" strokeWidth="2" />
+    <path d="M14 8a6 6 0 0 0-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+/**
+ * The primary action carries the brand green the eyebrow already uses.
+ *
+ * It used to be `bg-primary ... disabled:opacity-50`. In dark mode `--primary`
+ * is a near-white pill, so at 50% on a black sheet it landed as flat mid-grey --
+ * and because the page loads with an empty box, that half-dead grey was the
+ * FIRST thing anyone saw. The control was not broken, but it looked it.
+ *
+ * Six states, each distinguishable from the others by more than opacity:
+ *   idle      solid brand green fill
+ *   hover     brightened
+ *   active    dimmed, nudged 1px down
+ *   focus     a light ring, offset clear of the card
+ *   busy      still green but dimmed, with a spinner -- work in flight
+ *   disabled  hollow: hairline border, no fill, muted label, plus a line of
+ *             copy saying what would turn it on
+ */
+const ACTION_BASE =
+  "mt-4 inline-flex min-h-10 items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-card";
+const ACTION_IDLE =
+  "bg-brand text-brand-foreground hover:brightness-110 active:translate-y-px active:brightness-95";
+const ACTION_BUSY = "cursor-progress bg-brand/70 text-brand-foreground";
+const ACTION_OFF = "cursor-not-allowed border border-border bg-transparent text-mute";
+
+/* Sample chips are real buttons and were already tabbable, but had no focus
+ * style at all -- keyboard users could not see where they were. */
+const CHIP =
+  "rounded-md border border-border px-3 py-1.5 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card";
+
 export default function Home() {
   const [jobs, setJobs] = useState(SAMPLE_JOBS);
   const [text, setText] = useState("");
@@ -62,13 +114,22 @@ export default function Home() {
     }
   }
 
-  const canExtract = !busy && (text.trim().length > 0 || image !== null);
+  const hasInput = text.trim().length > 0 || image !== null;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="font-mono text-xs uppercase tracking-widest text-brand">
-        VivanceData demo — what comes back from the field
-      </p>
+    <>
+      {/* flex-1 + justify-center: the card used to sit in the top third with
+          the rest of the viewport left as void. Centring it and pinning the
+          footer as a band makes the page look composed rather than truncated.
+          `flex-1` in a column will not shrink below its content, so a long
+          result still lays out top-down and scrolls normally. */}
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-16">
+      <div className="flex items-center gap-2.5">
+        <PageMark />
+        <p className="font-mono text-xs uppercase tracking-widest text-brand">
+          VivanceData demo — what comes back from the field
+        </p>
+      </div>
       <h1 className="mt-4 text-display text-balance">
         The right note on the right job
       </h1>
@@ -79,7 +140,7 @@ export default function Home() {
         illegible is flagged, not guessed at. Nothing you submit is stored.
       </p>
 
-      <div className="mt-10 rounded-md border border-border bg-card p-6">
+      <div className="mt-10 rounded-md border border-t-2 border-border border-t-chart-3/60 bg-card p-6">
         <label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
           Today&apos;s open jobs
         </label>
@@ -91,13 +152,13 @@ export default function Home() {
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button
-            className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
+            className={CHIP}
             onClick={() => { setText(SAMPLE_NOTE); setImage(null); setCapture(null); }}
           >
             Sample field note
           </button>
           <button
-            className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
+            className={CHIP}
             onClick={() => fileInput.current?.click()}
           >
             Photo of your own…
@@ -114,7 +175,10 @@ export default function Home() {
         {image ? (
           <p className="mt-4 font-mono text-sm text-muted-foreground">
             {image.name}{" "}
-            <button className="text-brand underline-offset-4 hover:underline" onClick={() => setImage(null)}>
+            <button
+              className="rounded-sm text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+              onClick={() => setImage(null)}
+            >
               remove
             </button>
           </p>
@@ -128,12 +192,19 @@ export default function Home() {
         )}
 
         <button
-          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          disabled={!canExtract}
+          className={`${ACTION_BASE} ${busy ? ACTION_BUSY : hasInput ? ACTION_IDLE : ACTION_OFF}`}
+          disabled={busy || !hasInput}
+          aria-busy={busy}
           onClick={extract}
         >
+          {busy ? <Spinner /> : null}
           {busy ? "Reading…" : "Match it to a job"}
         </button>
+        {!busy && !hasInput ? (
+          <p className="mt-3 text-sm text-mute">
+            Paste a field note, take the sample above, or attach a photo, and this turns on.
+          </p>
+        ) : null}
         {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
       </div>
 
@@ -182,13 +253,20 @@ export default function Home() {
         </section>
       ) : null}
 
-      <footer className="mt-16 border-t border-border pt-6 text-sm text-muted-foreground">
-        Built by{" "}
-        <a className="text-brand underline-offset-4 hover:underline" href="https://www.vivancedata.com">
-          VivanceData
-        </a>{" "}
-        — the same matching, run on your own field captures before you pay for a build.
+      </main>
+
+      <footer className="border-t border-border bg-card">
+        <div className="mx-auto max-w-3xl px-6 py-8 text-sm text-muted-foreground">
+          Built by{" "}
+          <a
+            className="rounded-sm text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+            href="https://www.vivancedata.com"
+          >
+            VivanceData
+          </a>{" "}
+          — the same matching, run on your own field captures before you pay for a build.
+        </div>
       </footer>
-    </main>
+    </>
   );
 }
