@@ -58,31 +58,31 @@ components:
   action-idle:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-foreground}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
     padding: "8px 16px"
     height: "40px"
   action-busy:
     backgroundColor: "{colors.brand}"
     textColor: "{colors.brand-foreground}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
   action-disabled:
     backgroundColor: "transparent"
     textColor: "{colors.mute}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
   chip:
     backgroundColor: "transparent"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
     padding: "6px 12px"
   paste-box:
     backgroundColor: "{colors.background}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
     padding: "16px"
   input-card:
     backgroundColor: "{colors.card}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.sm}"
+    rounded: "{rounded.md}"
     padding: "24px"
 ---
 
@@ -226,17 +226,33 @@ neither, on purpose.
 
 ## Shapes
 
-Two radii and no more. **6px** (`rounded-md` under this preset) on every control
-and container: the card, the paste box, the chips, the action, the badges and
-the result panels. **Full round** only on the spinner's arc. There are no pills
-here — pills are the marketing site's language for a call to action, and this is
-app chrome, which the shared contract sets at 6px squares.
+One radius does nearly everything, and it is **not the one the shared contract
+asks for.** Measured in the browser: every button, every chip, the paste box, the
+input card and the result panels all compute `border-radius: 12px`, because
+`rounded-md` resolves to the preset's `md` step (12px), not to `sm` (6px). The
+shared contract reserves 12px for *content cards* and sets app chrome — buttons,
+inputs, selects — at 6px. Here chrome and container share one radius, so the
+shape language the contract calls "bimodal on purpose" is flat. The only 6px
+element on the page is the footer link; the only full round is the spinner's arc.
+
+That is recorded as built, not endorsed. Moving the controls to `rounded-sm`
+would restore the distinction between a control and the card holding it.
+
+There are no pills anywhere, which is correct: pills are the marketing site's
+language for a call to action, and this is app chrome.
+
+Sample chips measure **34px** tall. That sits off the shared contract's button
+scale (32px small, 40px default) and under the 44px comfortable touch target,
+on a page whose reader is holding a phone.
 
 The one departure from a plain rectangle is the input card's **top rule**: a 2px
 top border in the demo's mark hue at 60% opacity, against a 1px hairline on its
 other three sides. It is the only place the mark colour appears outside the mark
 itself, and it ties the card to the page's identity without adding a second
-decorative system.
+decorative system. Two knowing departures are worth recording rather than
+hiding: the shared contract states borders are always 1px, and it reserves the
+chart ramp for data rather than for chrome. The bundled detector flags this as
+`border-accent-on-rounded` in all three demos.
 
 ## Components
 
@@ -252,7 +268,7 @@ Six states, each separated from the others by more than opacity, because the
 page loads with an empty box and the disabled state is the first thing anyone
 sees:
 
-- **Idle:** solid brand fill, `brand-foreground` label, 6px, 40px min height.
+- **Idle:** solid brand fill, `brand-foreground` label, 12px radius, 40px min height.
 - **Hover:** `brightness-110`.
 - **Active:** `brightness-95`, nudged 1px down.
 - **Focus:** a 2px `foreground` ring, offset 2px clear of the card.
@@ -267,7 +283,7 @@ near-white pill in dark mode, half of it on a black sheet landed as flat mid-gre
 that looked broken rather than waiting.
 
 ### Sample Chips
-- **Style:** hairline border, transparent fill, 6px, 14px label.
+- **Style:** hairline border, transparent fill, 12px radius, 14px label, 34px tall.
 - **Hover:** `bg-accent`, the neutral wash.
 - **Focus:** 2px ring in `ring`, offset from the card.
 - **Purpose:** load a bundled fictional sample so a visitor reaches the result
@@ -276,14 +292,14 @@ that looked broken rather than waiting.
 
 ### Paste Box
 A `textarea` in Geist Mono at 14px, sheet-coloured inside the card, hairline
-bordered, 6px, `resize-y`. Mono because the thing pasted is a transcript or a
+bordered, 12px radius, `resize-y`. Mono because the thing pasted is a transcript or a
 document, and proportional type makes a misread column invisible.
 
 ### Result Panels
 - **Field grid:** a `dl` of mono uppercase `dt` labels over ink `dd` values,
   falling back to an em dash when a field came back empty. Two columns, three
   from `sm`.
-- **Bordered panel:** hairline, 6px, 16px padding, a mono uppercase heading, and
+- **Bordered panel:** hairline, 12px radius, 16px padding, a mono uppercase heading, and
   its content at 14px.
 
 ### Flagged, Not Guessed
@@ -316,8 +332,9 @@ link back to vivancedata.com. It is the only route onward from the page.
 - **Don't** set copy a visitor must read in `mute` or `faint` — including the
   hint under the disabled action, which currently breaks this rule.
 - **Don't** introduce a second accent colour, gradient, glow or floating shape.
-- **Don't** use a pill. Pills are the marketing site's language; this is chrome
-  at 6px.
+- **Don't** reach for a pill; pills are the marketing site's language, not chrome's.
+- **Don't** assume `rounded-md` is the contract's 6px chrome step — under this
+  preset it is 12px, which is why every control here carries card radius.
 - **Don't** style the flagged list as an error state.
 - **Don't** let a result table widen the page; it scrolls in its own container.
 - **Don't** write "VivanceData". The brand is Vivancedata, one word, capital V —
