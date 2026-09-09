@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
-    "@vivancedata/ui": "https://github.com/Vivancedata/ui/archive/refs/tags/v0.4.0.tar.gz",
+    "@vivancedata/ui": "https://github.com/Vivancedata/ui/archive/refs/tags/v0.5.0.tar.gz",
     "next": "^16.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
