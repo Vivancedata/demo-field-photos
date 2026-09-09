@@ -66,10 +66,10 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="font-mono text-xs uppercase tracking-widest text-brand">
+      <p className="text-label uppercase text-mute">
         Vivancedata demo — what comes back from the field
       </p>
-      <h1 className="mt-4 text-display text-balance">
+      <h1 className="mt-4 font-display text-serif-lg text-balance">
         The right note on the right job
       </h1>
       <p className="mt-4 max-w-prose text-muted-foreground">
@@ -114,7 +114,7 @@ export default function Home() {
         {image ? (
           <p className="mt-4 font-mono text-sm text-muted-foreground">
             {image.name}{" "}
-            <button className="text-brand underline-offset-4 hover:underline" onClick={() => setImage(null)}>
+            <button className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current" onClick={() => setImage(null)}>
               remove
             </button>
           </p>
@@ -169,7 +169,7 @@ export default function Home() {
 
           {capture.flagged_as_unreadable.length > 0 ? (
             <div className="mt-6 rounded-md border border-border p-4">
-              <h3 className="font-mono text-xs uppercase tracking-wider text-brand">
+              <h3 className="text-label uppercase text-foreground">
                 Flagged, not guessed
               </h3>
               <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
@@ -184,7 +184,7 @@ export default function Home() {
 
       <footer className="mt-16 border-t border-border pt-6 text-sm text-muted-foreground">
         Built by{" "}
-        <a className="text-brand underline-offset-4 hover:underline" href="https://www.vivancedata.com">
+        <a className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current" href="https://www.vivancedata.com">
           Vivancedata
         </a>{" "}
         — the same matching, run on your own field captures before you pay for a build.
