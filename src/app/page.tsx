@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { SAMPLE_JOBS, SAMPLE_NOTE } from "@/lib/samples";
 import type { FieldCapture } from "@/lib/schema";
 
@@ -14,12 +14,45 @@ const CONFIDENCE_LABEL: Record<FieldCapture["match_confidence"], string> = {
   none: "No confident match",
 };
 
+// Static markup, hoisted so a keystroke in the controlled textareas does not
+// rebuild it (react-best-practices: rendering-hoist-jsx).
+const intro = (
+  <>
+    <p className="text-label uppercase text-mute">
+      <span translate="no">Vivancedata</span> demo — what comes back from the field
+    </p>
+    <h1 className="mt-4 font-display text-serif-lg text-balance">
+      The right note on the right job
+    </h1>
+    <p className="mt-4 max-w-prose text-muted-foreground">
+      Photos, signed slips and scrawled field notes, matched to the job they
+      belong to. A wrong-job match is the worst failure a system like this can
+      produce — so no confident match means <em>no</em> match, and anything
+      illegible is flagged, not guessed at. Nothing you submit is stored.
+    </p>
+  </>
+);
+
+const footer = (
+  <footer className="mt-16 border-t border-border pt-6 text-sm text-muted-foreground">
+    Built by{" "}
+    <a
+      className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current"
+      href="https://www.vivancedata.com"
+      translate="no"
+    >
+      Vivancedata
+    </a>{" "}
+    — the same matching, run on your own field captures before you pay for a build.
+  </footer>
+);
+
 export default function Home() {
   const [jobs, setJobs] = useState(SAMPLE_JOBS);
   const [text, setText] = useState("");
   const [image, setImage] = useState<{ payload: ImagePayload; name: string } | null>(null);
   const [capture, setCapture] = useState<FieldCapture | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, startMatch] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -42,28 +75,28 @@ export default function Home() {
     setError(null);
   }
 
-  async function extract() {
-    setBusy(true);
+  function extract() {
     setError(null);
     setCapture(null);
-    try {
-      const res = await fetch("/api/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(image ? { jobs, image: image.payload } : { jobs, text }),
-      });
-      // A proxy timeout returns HTML, not JSON; fall through to the
-      // status-based message instead of surfacing a parser error.
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.record) {
-        throw new Error(data.error ?? `Request failed (${res.status}). Try again in a moment.`);
+    startMatch(async () => {
+      try {
+        const res = await fetch("/api/extract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(image ? { jobs, image: image.payload } : { jobs, text }),
+        });
+        // A proxy timeout returns HTML, not JSON; fall through to the
+        // status-based message instead of surfacing a parser error.
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.record) {
+          throw new Error(data.error ?? `Request failed (${res.status}). Try again in a moment.`);
+        }
+        startMatch(() => setCapture(data.record));
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Processing failed. Try again in a moment.";
+        startMatch(() => setError(message));
       }
-      setCapture(data.record);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Processing failed. Try again in a moment.");
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   const canExtract = !busy && (text.trim().length > 0 || image !== null);
@@ -71,18 +104,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-label uppercase text-mute">
-        <span translate="no">Vivancedata</span> demo — what comes back from the field
-      </p>
-      <h1 className="mt-4 font-display text-serif-lg text-balance">
-        The right note on the right job
-      </h1>
-      <p className="mt-4 max-w-prose text-muted-foreground">
-        Photos, signed slips and scrawled field notes, matched to the job they
-        belong to. A wrong-job match is the worst failure a system like this can
-        produce — so no confident match means <em>no</em> match, and anything
-        illegible is flagged, not guessed at. Nothing you submit is stored.
-      </p>
+      {intro}
 
       <div className="mt-10 rounded-md border border-border bg-card p-6">
         <label htmlFor="open-jobs" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -218,17 +240,7 @@ export default function Home() {
         </section>
       ) : null}
 
-      <footer className="mt-16 border-t border-border pt-6 text-sm text-muted-foreground">
-        Built by{" "}
-        <a
-          className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current"
-          href="https://www.vivancedata.com"
-          translate="no"
-        >
-          Vivancedata
-        </a>{" "}
-        — the same matching, run on your own field captures before you pay for a build.
-      </footer>
+      {footer}
     </main>
   );
 }
