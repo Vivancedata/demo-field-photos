@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 // Order matters: the design system defines tokens and base styles, then
 // globals.css layers anything app-specific on top.
@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   title: "Field photos demo — Vivancedata",
   description:
     "A site photo or scrawled note, matched to the right job. No confident match means no match — never the wrong job.",
+};
+
+// Matches `--background` of the dark nightshift world (hsl(60 8% 5%)), the
+// only theme this demo ships, so mobile browser chrome blends into the page.
+export const viewport: Viewport = {
+  themeColor: "#0e0e0c",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
