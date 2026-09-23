@@ -27,7 +27,7 @@ type Payload = {
 export async function POST(request: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured on the server." },
+      { error: "The demo is offline: ANTHROPIC_API_KEY is not configured on the server. Set it in the project environment and redeploy." },
       { status: 503 },
     );
   }
@@ -44,11 +44,11 @@ export async function POST(request: Request) {
   try {
     payload = await request.json();
   } catch {
-    return NextResponse.json({ error: "Body must be JSON." }, { status: 400 });
+    return NextResponse.json({ error: "Body must be JSON. Send `{ \"jobs\": \"…\", \"text\": \"…\" }` or an `image`." }, { status: 400 });
   }
 
   if (typeof payload.text === "string" && payload.text.length > 20_000) {
-    return NextResponse.json({ error: "Text too long (20k characters max)." }, { status: 413 });
+    return NextResponse.json({ error: "Text too long (20k characters max). Shorten it and try again." }, { status: 413 });
   }
   const hasText = typeof payload.text === "string" && payload.text.trim().length > 0;
   const hasImage = Boolean(payload.image?.data && payload.image.media_type);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   }
   // ~7MB base64 ≈ 5MB image, Claude's per-image ceiling.
   if (hasImage && payload.image!.data.length > 7_000_000) {
-    return NextResponse.json({ error: "Image too large (5MB max)." }, { status: 413 });
+    return NextResponse.json({ error: "Image too large (5\u00a0MB max). Use a smaller photo." }, { status: 413 });
   }
 
   const content: Anthropic.ContentBlockParam[] = hasImage
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 
     const text = response.content.find((b) => b.type === "text");
     if (!text || text.type !== "text") {
-      return NextResponse.json({ error: "Model returned no output." }, { status: 502 });
+      return NextResponse.json({ error: "Model returned no output. Try again." }, { status: 502 });
     }
     // output_config guarantees the text parses against CAPTURE_SCHEMA.
     return NextResponse.json({ record: JSON.parse(text.text) });
@@ -104,10 +104,10 @@ export async function POST(request: Request) {
     if (error instanceof Anthropic.APIError) {
       const friendly =
         error instanceof Anthropic.AuthenticationError
-          ? "The server's API key was rejected."
+          ? "The server’s API key was rejected. Check the key in the project environment."
           : error instanceof Anthropic.RateLimitError
             ? "Rate limited — try again in a moment."
-            : `Extraction failed (${error.status}).`;
+            : `Extraction failed (${error.status}). Try again in a moment.`;
       return NextResponse.json({ error: friendly }, { status: 502 });
     }
     throw error;

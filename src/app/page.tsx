@@ -25,7 +25,7 @@ export default function Home() {
 
   async function onFile(file: File) {
     if (!MEDIA_TYPES.includes(file.type as (typeof MEDIA_TYPES)[number])) {
-      setError("JPEG, PNG or WebP only.");
+      setError("That file type is not supported. Choose a JPEG, PNG or WebP photo.");
       return;
     }
     const buf = await file.arrayBuffer();
@@ -52,11 +52,15 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(image ? { jobs, image: image.payload } : { jobs, text }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
+      // A proxy timeout returns HTML, not JSON; fall through to the
+      // status-based message instead of surfacing a parser error.
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.record) {
+        throw new Error(data.error ?? `Request failed (${res.status}). Try again in a moment.`);
+      }
       setCapture(data.record);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Processing failed.");
+      setError(e instanceof Error ? e.message : "Processing failed. Try again in a moment.");
     } finally {
       setBusy(false);
     }
@@ -68,7 +72,7 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <p className="text-label uppercase text-mute">
-        Vivancedata demo — what comes back from the field
+        <span translate="no">Vivancedata</span> demo — what comes back from the field
       </p>
       <h1 className="mt-4 font-display text-serif-lg text-balance">
         The right note on the right job
@@ -82,7 +86,7 @@ export default function Home() {
 
       <div className="mt-10 rounded-md border border-border bg-card p-6">
         <label htmlFor="open-jobs" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-          Today&apos;s open jobs
+          Today’s open jobs
         </label>
         <textarea
           id="open-jobs"
@@ -175,7 +179,7 @@ export default function Home() {
             <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
               {CONFIDENCE_LABEL[capture.match_confidence]}
             </p>
-            <p className="mt-2 text-heading-2">
+            <p className="mt-2 text-heading-2" translate="no">
               {capture.matched_job_id || "—"}
             </p>
             <p className="mt-2 break-words text-sm text-muted-foreground">{capture.match_reasoning}</p>
@@ -216,7 +220,11 @@ export default function Home() {
 
       <footer className="mt-16 border-t border-border pt-6 text-sm text-muted-foreground">
         Built by{" "}
-        <a className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current" href="https://www.vivancedata.com">
+        <a
+          className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current"
+          href="https://www.vivancedata.com"
+          translate="no"
+        >
           Vivancedata
         </a>{" "}
         — the same matching, run on your own field captures before you pay for a build.
