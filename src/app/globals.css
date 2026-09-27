@@ -2,3 +2,18 @@
  * layout.tsx before this file). Only app-specific styles belong here. */
 @tailwind components;
 @tailwind utilities;
+
+/* Dark-only app: tell the browser so scrollbars and form controls render dark. */
+html {
+  color-scheme: dark;
+  /* Pressed feedback comes from hover/focus-visible styles, not the grey flash. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove the double-tap-to-zoom delay on controls. */
+a,
+button,
+input,
+textarea {
+  touch-action: manipulation;
+}
