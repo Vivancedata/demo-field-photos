@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { isAllowedOrigin } from "@/lib/origin";
 import { rateLimit } from "@/lib/rate-limit";
 import { CAPTURE_SCHEMA } from "@/lib/schema";
 
@@ -25,6 +26,13 @@ type Payload = {
 };
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json(
+      { error: "This endpoint only serves the demo page it ships with." },
+      { status: 403 },
+    );
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: "The demo is offline: ANTHROPIC_API_KEY is not configured on the server. Set it in the project environment and redeploy." },
@@ -85,15 +93,26 @@ export async function POST(request: Request) {
   const client = new Anthropic();
   try {
     const response = await client.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 8000,
+      // Haiku: the schema is flat (strings, enums, string arrays) and the job is
+      // transcription and matching, not open-ended reasoning. max_tokens covers
+      // the largest realistic record plus low-effort thinking, and caps what one
+      // request can cost.
+      model: "claude-haiku-5-5",
+      max_tokens: 2048,
       system: SYSTEM,
       messages: [{ role: "user", content }],
       output_config: {
+        effort: "low",
         format: { type: "json_schema", schema: CAPTURE_SCHEMA },
       },
     });
 
+    if (response.stop_reason === "refusal") {
+      return NextResponse.json({ error: "The model declined this input. Try a different sample." }, { status: 502 });
+    }
+    if (response.stop_reason === "max_tokens") {
+      return NextResponse.json({ error: "The input produced more output than this demo allows. Try a shorter one." }, { status: 502 });
+    }
     const text = response.content.find((b) => b.type === "text");
     if (!text || text.type !== "text") {
       return NextResponse.json({ error: "Model returned no output. Try again." }, { status: 502 });

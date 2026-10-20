@@ -29,7 +29,7 @@ npm run dev                  # http://localhost:3000
 ## How it works
 
 One route handler sends the job list plus the capture (text or image) to
-Claude (`claude-opus-5`) with a JSON Schema enforced via `output_config`, so
+Claude (`claude-haiku-5-5`) with a JSON Schema enforced via `output_config`, so
 the response always parses against `src/lib/schema.ts`. The system prompt
 requires quoted evidence for any match and makes "none" an always-acceptable
 answer.

@@ -29,6 +29,8 @@ const intro = (
       belong to. A wrong-job match is the worst failure a system like this can
       produce — so no confident match means <em>no</em> match, and anything
       illegible is flagged, not guessed at. Nothing you submit is stored.
+      Submissions are sent to Anthropic’s API for processing and aren’t
+      retained by Vivancedata. Don’t upload real customer data.
     </p>
   </>
 );
