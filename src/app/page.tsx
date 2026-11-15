@@ -74,6 +74,7 @@ export default function Home() {
       name: file.name,
     });
     setText("");
+    setCapture(null);
     setError(null);
   }
 
@@ -139,7 +140,13 @@ export default function Home() {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             className="hidden"
-            onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              // Reset so choosing the same photo again (after "remove") still
+              // fires onChange.
+              e.target.value = "";
+              if (file) void onFile(file);
+            }}
           />
         </div>
 
@@ -149,7 +156,7 @@ export default function Home() {
             <button
               className="text-foreground underline decoration-rule underline-offset-4 hover:decoration-current"
               aria-label={`Remove ${image.name}`}
-              onClick={() => setImage(null)}
+              onClick={() => { setImage(null); setCapture(null); }}
             >
               remove
             </button>

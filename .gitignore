@@ -5,3 +5,8 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# test output
+/playwright-report/
+/test-results/
+/coverage/
