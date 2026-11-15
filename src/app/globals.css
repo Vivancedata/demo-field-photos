@@ -1,8 +1,5 @@
 /* Tokens, base layer and utilities come from @vivancedata/ui (imported in
  * layout.tsx before this file). Only app-specific styles belong here. */
-@tailwind components;
-@tailwind utilities;
-
 /* Dark-only app: tell the browser so scrollbars and form controls render dark. */
 html {
   color-scheme: dark;
