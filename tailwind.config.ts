@@ -5,10 +5,7 @@ import vivanceTailwindPreset from "@vivancedata/ui/tailwind";
 // the practice, so it renders in the practice's own design system.
 const config: Config = {
   presets: [vivanceTailwindPreset],
-  content: [
-    "./src/**/*.{ts,tsx}",
-    "./node_modules/@vivancedata/ui/src/**/*.{ts,tsx}",
-  ],
+  content: ["./src/**/*.{ts,tsx}"],
 };
 
 export default config;
