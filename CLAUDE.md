@@ -13,3 +13,7 @@ The five canonical roles, label string equal to role name. See `docs/agents/tria
 ### Domain docs
 
 Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Checks
+
+`npm run verify` (lint, `tsc --noEmit`, Vitest unit tests, production build) must pass before a PR is opened; CI runs it plus a Playwright smoke test (`npm run build && npm run test:e2e`). Unit tests stub the Anthropic API, so no key is needed. Fix the code, not the test, when a check fails.
