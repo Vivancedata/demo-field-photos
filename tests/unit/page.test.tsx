@@ -97,6 +97,21 @@ describe("field photos page", () => {
     expect(screen.queryByText("JOB-4478")).not.toBeInTheDocument();
   });
 
+  it("offers a call only once a result is shown", async () => {
+    const user = userEvent.setup();
+    mockFetch(200, { record: CAPTURE });
+    render(<Home />);
+    expect(screen.queryByRole("link", { name: /book a call/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /sample field note/i }));
+    await user.click(submit());
+    await screen.findByText("JOB-4478");
+
+    expect(screen.getByRole("link", { name: /book a call/i })).toHaveAttribute(
+      "href",
+      "https://www.vivancedata.com/contact?utm_source=demo-field-photos",
+    );
+  });
+
   it("shows the server's error message", async () => {
     const user = userEvent.setup();
     mockFetch(429, { error: "Rate limited — try again in 30s." });
