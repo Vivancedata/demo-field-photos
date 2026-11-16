@@ -14,6 +14,13 @@ const CONFIDENCE_LABEL: Record<FieldCapture["match_confidence"], string> = {
   none: "No confident match",
 };
 
+const CAPTURE_TYPE_LABEL: Record<FieldCapture["capture_type"], string> = {
+  site_photo: "Site photo",
+  handwritten_note: "Handwritten note",
+  signed_slip: "Signed slip",
+  other: "Other",
+};
+
 // Static markup, hoisted so a keystroke in the controlled textareas does not
 // rebuild it (react-best-practices: rendering-hoist-jsx).
 const intro = (
@@ -219,6 +226,7 @@ export default function Home() {
           <dl className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
             {(
               [
+                ["Capture", [CAPTURE_TYPE_LABEL[capture.capture_type]]],
                 ["Summary", [capture.summary]],
                 ["People", capture.people_mentioned],
                 ["Materials / equipment", capture.materials_or_equipment],
