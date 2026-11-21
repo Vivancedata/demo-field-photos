@@ -66,6 +66,7 @@ describe("field photos page", () => {
 
     expect(screen.getByText(/tentative — confirm before filing/i)).toBeVisible();
     expect(screen.getByText(CAPTURE.match_reasoning)).toBeVisible();
+    expect(screen.getByText("Capture").nextElementSibling).toHaveTextContent("Handwritten note");
     expect(screen.getByRole("heading", { name: /flagged, not guessed/i })).toBeVisible();
     expect(screen.getByText("torn corner")).toBeVisible();
     expect(screen.getByText("Capture matched. The result is below.")).toBeInTheDocument();
@@ -113,6 +114,21 @@ describe("field photos page", () => {
     await user.click(screen.getByRole("button", { name: /sample field note/i }));
     await user.click(submit());
     expect(await screen.findByText(/request failed \(504\)/i)).toBeVisible();
+  });
+
+  it.each([
+    ["site_photo", "Site photo"],
+    ["handwritten_note", "Handwritten note"],
+    ["signed_slip", "Signed slip"],
+    ["other", "Other"],
+  ] as const)("labels a %s capture as “%s”", async (capture_type, label) => {
+    const user = userEvent.setup();
+    mockFetch(200, { record: { ...CAPTURE, capture_type } });
+    render(<Home />);
+    await user.click(screen.getByRole("button", { name: /sample field note/i }));
+    await user.click(submit());
+    await screen.findByText("JOB-4478");
+    expect(screen.getByText("Capture").nextElementSibling).toHaveTextContent(label);
   });
 
   describe("photo capture", () => {
