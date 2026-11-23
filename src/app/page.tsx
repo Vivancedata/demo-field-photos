@@ -254,6 +254,18 @@ export default function Home() {
               </ul>
             </div>
           ) : null}
+
+          <div className="mt-10 rounded-md border border-border bg-card p-6">
+            <p className="text-sm text-muted-foreground">
+              Want this matching on your own jobs and field captures?
+            </p>
+            <a
+              className="mt-4 inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-label uppercase text-primary-foreground transition-colors hover:bg-primary/85"
+              href="https://www.vivancedata.com/contact?utm_source=demo-field-photos"
+            >
+              Book a call
+            </a>
+          </div>
         </section>
       ) : null}
 
